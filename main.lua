@@ -216,6 +216,36 @@ local mipScene = (function()
     end
 end)()
 
+local multiCanvasScene = (function()
+    local shader = love.graphics.newShader [[
+        void effect()
+        {
+            love_Canvases[0] = vec4(0.0, 0.0, 1.0, 1.0);
+            love_Canvases[1] = vec4(1.0, 0.0, 0.0, 1.0);
+        }
+    ]]
+
+    local canvas1 = love.graphics.newCanvas(50, 50)
+    local canvas2 = love.graphics.newCanvas(50, 50)
+
+    love.graphics.setShader(shader)
+
+    love.graphics.setCanvas(canvas1, canvas2)
+
+    love.graphics.rectangle("line", 0, 0, 50, 50)
+    love.graphics.circle("fill", 25, 25, 10)
+        
+    love.graphics.setCanvas()
+
+    love.graphics.setShader()
+
+    return function()
+        love.graphics.print("multi canvas drawing:")
+        love.graphics.draw(canvas1, 25, 25)
+        love.graphics.draw(canvas2, 100, 25)
+    end
+end)()
+
 local scenes
 local sceneIndex
 
@@ -236,6 +266,7 @@ function love.load()
         texturesScene,
         canvasScene,
         mipScene,
+        multiCanvasScene,
     }
     sceneIndex = 1
 end
@@ -254,7 +285,9 @@ function love.keypressed(key)
     if key == "escape" then
         love.event.quit()
     end
-    nextScene()
+    if key == "return" then
+        nextScene()
+    end
 end
 
 function love.touchpressed()
