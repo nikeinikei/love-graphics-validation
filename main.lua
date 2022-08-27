@@ -8,7 +8,7 @@ local printScene = (function()
         love.graphics.print("love.graphics.print works", 10, 10)
         love.graphics.draw(text, 10, 25)
         love.graphics.printf("This text is aligned right, and wraps when it gets too big.", 10, 60, 125, "right")
-        love.graphics.print("Renderer Info: " .. table.concat({love.graphics.getRendererInfo()}, " - "), 250, 10)
+        love.graphics.print("Renderer Info: " .. table.concat({love.graphics.getRendererInfo()}, " - "), 250, 50)
     end
 end)()
 
@@ -202,7 +202,7 @@ local mipScene = (function()
     texture = love.graphics.newTexture("test.jpg")
 
     return function()
-        love.graphics.print("mip is not working yet :(")
+        love.graphics.print("mip maps work")
         love.graphics.print("with mip maps:", 0, 15)
 
         love.graphics.draw(textureMip, 10, 40, 0, 1/4)
@@ -242,6 +242,9 @@ end
 
 function love.draw()
     scenes[sceneIndex]()
+
+    love.graphics.origin()
+    love.graphics.print("FPS: " .. love.timer.getFPS(), love.graphics.getWidth() - 200)
 end
 
 function love.keypressed(key)
