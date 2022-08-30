@@ -246,6 +246,46 @@ local multiCanvasScene = (function()
     end
 end)()
 
+local readbackScene = (function()
+    local canvas1 = love.graphics.newCanvas(50, 50)
+    love.graphics.setColor(0, 1, 0, 1)
+    love.graphics.setCanvas(canvas1)
+    love.graphics.rectangle("line", 0, 0, 50, 50)
+    love.graphics.circle("fill", 25, 25, 10)
+    love.graphics.setCanvas()
+
+    local canvas2 = love.graphics.newCanvas(50, 50)
+    love.graphics.setColor(0, 1, 1, 1)
+    love.graphics.setCanvas(canvas2)
+    love.graphics.rectangle("line", 0, 0, 50, 50)
+    love.graphics.circle("fill", 25, 25, 10)
+    love.graphics.setCanvas()
+
+    love.graphics.setColor(1, 1, 1, 1)
+
+    local imageData = love.graphics.readbackTexture(canvas1)
+    local texture1 = love.graphics.newTexture(imageData)
+
+    local readBack = love.graphics.readbackTextureAsync(canvas2)
+    local texture2
+
+    return function()
+        love.graphics.print("read back:")
+        love.graphics.draw(texture1, 25, 25)
+
+        if readBack then
+            if readBack:isComplete() then
+                texture2 = love.graphics.newTexture(readBack:getImageData())
+                readBack = nil
+            end
+        end
+
+        if texture2 then
+            love.graphics.draw(texture2, 100, 25)
+        end
+    end
+end)()
+
 local scenes
 local sceneIndex
 
@@ -267,8 +307,9 @@ function love.load()
         canvasScene,
         mipScene,
         multiCanvasScene,
+        readbackScene,
     }
-    sceneIndex = 1
+    sceneIndex = #scenes
 end
 
 function love.draw()
