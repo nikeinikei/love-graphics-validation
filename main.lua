@@ -286,6 +286,34 @@ local readbackScene = (function()
     end
 end)()
 
+local computeScene = (function()
+    local shader = love.graphics.newComputeShader [[
+        layout (local_size_x = 1, local_size_y = 1) in;
+        
+        layout(r32f) uniform highp image2D out_tex;
+
+        uniform float time;
+        
+        void computemain() {
+            imageStore(out_tex, ivec2(love_GlobalThreadID.xy), vec4(time, 1.0, 1.0, 1.0));
+        }
+    ]]
+    
+    local tex = love.graphics.newTexture(64, 64, {
+        computewrite = true,
+        format = "r32f"
+    })
+
+    return function()
+        shader:send("out_tex", tex)
+        shader:send("time", love.timer.getTime() % 1)
+        love.graphics.dispatchThreadgroups(shader, 64, 64, 1)
+
+        love.graphics.print("compute shader test")
+        love.graphics.draw(tex, 25, 25)
+    end
+end)()
+
 local scenes
 local sceneIndex
 
@@ -308,6 +336,7 @@ function love.load()
         mipScene,
         multiCanvasScene,
         readbackScene,
+        computeScene,
     }
     sceneIndex = #scenes
 end
