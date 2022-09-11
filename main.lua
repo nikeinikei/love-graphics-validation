@@ -8,7 +8,7 @@ local printScene = (function()
         love.graphics.print("love.graphics.print works", 10, 10)
         love.graphics.draw(text, 10, 25)
         love.graphics.printf("This text is aligned right, and wraps when it gets too big.", 10, 60, 125, "right")
-        love.graphics.print("Renderer Info: " .. table.concat({love.graphics.getRendererInfo()}, " - "), 250, 50)
+        love.graphics.print("Renderer Info: " .. table.concat({love.graphics.getRendererInfo()}, " - "), 25, 200)
     end
 end)()
 
@@ -314,6 +314,37 @@ local computeScene = (function()
     end
 end)()
 
+local depthScene = (function()
+    local shader = love.graphics.newShader [[
+        uniform float depth;
+
+        vec4 position(mat4 transform_projection, vec4 vertex_position) {
+            vec4 pos = transform_projection * vertex_position;
+            pos.z += depth;
+            return pos;
+        }
+    ]]
+
+    return function()
+        love.graphics.setDepthMode("lequal", true)
+
+        love.graphics.setShader(shader)
+
+        shader:send("depth", 0.5)
+        love.graphics.setColor(0, 0, 1, 1)
+        love.graphics.rectangle("fill", 50, 50, 50, 50)
+
+        shader:send("depth", 0.5 * math.sin(5 * love.timer.getTime()) + 0.5)
+        love.graphics.setColor(0, 1, 1, 1)
+        love.graphics.rectangle("fill", 75, 75, 50, 50)
+
+        love.graphics.setColor(1, 1, 1, 1)
+        love.graphics.setShader()
+
+        love.graphics.print("depth testing")
+    end
+end)()
+
 local scenes
 local sceneIndex
 
@@ -337,6 +368,7 @@ function love.load()
         multiCanvasScene,
         readbackScene,
         computeScene,
+        depthScene,
     }
     sceneIndex = #scenes
 end
