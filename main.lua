@@ -355,6 +355,8 @@ function nextScene()
     end
 end
 
+local screenshotChannel
+
 function love.load()
     scenes = {
         printScene,
@@ -371,6 +373,14 @@ function love.load()
         depthScene,
     }
     sceneIndex = #scenes
+    screenshotChannel = love.thread.newChannel()
+end
+
+function love.update()
+    local screenShotData = screenshotChannel:pop()
+    if screenShotData then
+        screenShotData:encode("png", "screenshot.png")
+    end
 end
 
 function love.draw()
@@ -381,6 +391,9 @@ function love.draw()
 end
 
 function love.keypressed(key)
+    if key == "s" then
+        love.graphics.captureScreenshot(screenshotChannel)
+    end
     if key == "r" then
         love.event.quit("restart")
     end
