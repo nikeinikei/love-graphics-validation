@@ -165,6 +165,21 @@ local texturesScene = (function()
     local cubeTexture = love.graphics.newCubeImage("cube_map.png")
     cubeShader:send("cube", cubeTexture)
 
+
+    local volumeShader = love.graphics.newShader [[
+        uniform VolumeImage vol;
+
+        vec4 effect(vec4 color, Image tex, vec2 texture_coords, vec2 screen_coords)
+        {
+            vec4 texturecolor = Texel(vol, vec3(texture_coords, 0.5));
+            return texturecolor * color;
+        }
+    ]]
+
+    local volumeTexture = love.graphics.newVolumeImage({data, data2})
+
+    volumeShader:send("vol", volumeTexture)
+
     return function()
         love.graphics.print("drawing basic textures work:")
         love.graphics.draw(texture1, 30, 30)
@@ -177,6 +192,12 @@ local texturesScene = (function()
         love.graphics.print("drawing a cube texture works", 200, 0)
         love.graphics.setShader(cubeShader)
         love.graphics.rectangle("fill", 250, 50, 100, 100)
+        
+        love.graphics.setShader()
+        love.graphics.print("drawing a volume image", 200, 160)
+        love.graphics.setShader(volumeShader)
+        love.graphics.draw(texture1, 250, 200, 0, 2)
+
         love.graphics.setShader()
     end
 end)()
@@ -372,7 +393,7 @@ function love.load()
         computeScene,
         depthScene,
     }
-    sceneIndex = #scenes
+    sceneIndex = 6
     screenshotChannel = love.thread.newChannel()
 end
 
