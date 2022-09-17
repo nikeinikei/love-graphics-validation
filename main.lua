@@ -68,10 +68,10 @@ local transformationsScene = (function()
 end)()
 
 local videoScene = (function()
-    local video = love.graphics.newVideo("out.ogv", {audio = false})
+    local video = love.graphics.newVideo("small.ogv", {audio = false})
     video:play()
     local width, height = video:getDimensions()
-    local targetWidth, targetHeight = 1280 / 1.5, 720 / 1.5
+    local targetWidth, targetHeight = 1280 / 2, 720 / 2
     local sx, sy = targetWidth / width, targetHeight / height
 
     return function()
