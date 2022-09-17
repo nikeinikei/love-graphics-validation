@@ -8,7 +8,7 @@ local printScene = (function()
         love.graphics.print("love.graphics.print works", 10, 10)
         love.graphics.draw(text, 10, 25)
         love.graphics.printf("This text is aligned right, and wraps when it gets too big.", 10, 60, 125, "right")
-        love.graphics.print("Renderer Info: " .. table.concat({love.graphics.getRendererInfo()}, " - "), 250, 50)
+        love.graphics.print("Renderer Info: " .. table.concat({love.graphics.getRendererInfo()}, " - "), 25, 200)
     end
 end)()
 
@@ -165,6 +165,29 @@ local texturesScene = (function()
     local cubeTexture = love.graphics.newCubeImage("cube_map.png")
     cubeShader:send("cube", cubeTexture)
 
+
+    local volumeShader = love.graphics.newShader [[
+        uniform VolumeImage vol;
+
+        vec4 effect(vec4 color, Image tex, vec2 texture_coords, vec2 screen_coords)
+        {
+            vec4 texturecolor = Texel(vol, vec3(texture_coords, 0.5));
+            return texturecolor * color;
+        }
+    ]]
+
+    local volumeTexture = love.graphics.newVolumeImage({data, data2})
+
+    volumeShader:send("vol", volumeTexture)
+
+    local compressedTexture
+    local os = love.system.getOS()
+    if os == "Android" or os == "iOS" then
+        compressedTexture = love.graphics.newTexture("test.astc")
+    else
+        compressedTexture = love.graphics.newTexture("test.dds")
+    end
+
     return function()
         love.graphics.print("drawing basic textures work:")
         love.graphics.draw(texture1, 30, 30)
@@ -174,9 +197,18 @@ local texturesScene = (function()
         love.graphics.drawLayer(arrayTexture, 1, 30, 180)
         love.graphics.drawLayer(arrayTexture, 2, 30, 230)
 
+        love.graphics.print("drawing compressed texture:", 400, 0)
+        love.graphics.draw(compressedTexture, 400, 30, 0, 0.3)
+
         love.graphics.print("drawing a cube texture works", 200, 0)
         love.graphics.setShader(cubeShader)
         love.graphics.rectangle("fill", 250, 50, 100, 100)
+        
+        love.graphics.setShader()
+        love.graphics.print("drawing a volume image", 200, 160)
+        love.graphics.setShader(volumeShader)
+        love.graphics.draw(texture1, 250, 200, 0, 2)
+
         love.graphics.setShader()
     end
 end)()
@@ -314,6 +346,37 @@ local computeScene = (function()
     end
 end)()
 
+local depthScene = (function()
+    local shader = love.graphics.newShader [[
+        uniform float depth;
+
+        vec4 position(mat4 transform_projection, vec4 vertex_position) {
+            vec4 pos = transform_projection * vertex_position;
+            pos.z += depth;
+            return pos;
+        }
+    ]]
+
+    return function()
+        love.graphics.setDepthMode("lequal", true)
+
+        love.graphics.setShader(shader)
+
+        shader:send("depth", 0.5)
+        love.graphics.setColor(0, 0, 1, 1)
+        love.graphics.rectangle("fill", 50, 50, 50, 50)
+
+        shader:send("depth", 0.5 * math.sin(5 * love.timer.getTime()) + 0.5)
+        love.graphics.setColor(0, 1, 1, 1)
+        love.graphics.rectangle("fill", 75, 75, 50, 50)
+
+        love.graphics.setColor(1, 1, 1, 1)
+        love.graphics.setShader()
+
+        love.graphics.print("depth testing")
+    end
+end)()
+
 local scenes
 local sceneIndex
 
@@ -323,6 +386,8 @@ function nextScene()
         sceneIndex = 1
     end
 end
+
+local screenshotChannel
 
 function love.load()
     scenes = {
@@ -337,8 +402,17 @@ function love.load()
         multiCanvasScene,
         readbackScene,
         computeScene,
+        depthScene,
     }
-    sceneIndex = #scenes
+    sceneIndex = 6
+    screenshotChannel = love.thread.newChannel()
+end
+
+function love.update()
+    local screenShotData = screenshotChannel:pop()
+    if screenShotData then
+        screenShotData:encode("png", "screenshot.png")
+    end
 end
 
 function love.draw()
@@ -349,6 +423,9 @@ function love.draw()
 end
 
 function love.keypressed(key)
+    if key == "s" then
+        love.graphics.captureScreenshot(screenshotChannel)
+    end
     if key == "r" then
         love.event.quit("restart")
     end
