@@ -406,7 +406,7 @@ function love.load()
         computeScene,
         depthScene,
     }
-    sceneIndex = 6
+    sceneIndex = 1
     screenshotChannel = love.thread.newChannel()
 end
 
