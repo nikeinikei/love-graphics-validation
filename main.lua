@@ -260,15 +260,17 @@ local multiCanvasScene = (function()
     local canvas1 = love.graphics.newCanvas(50, 50)
     local canvas2 = love.graphics.newCanvas(50, 50)
 
-    love.graphics.setShader(shader)
+    local depthCanvas = love.graphics.newCanvas(50, 50, {
+        format = "depth24stencil8"
+    })
 
-    love.graphics.setCanvas(canvas1, canvas2)
+    love.graphics.setShader(shader)
+    love.graphics.setCanvas({canvas1, canvas2, depthstencil = depthCanvas})
 
     love.graphics.rectangle("line", 0, 0, 50, 50)
     love.graphics.circle("fill", 25, 25, 10)
-        
+    
     love.graphics.setCanvas()
-
     love.graphics.setShader()
 
     return function()
