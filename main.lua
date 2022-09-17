@@ -180,6 +180,14 @@ local texturesScene = (function()
 
     volumeShader:send("vol", volumeTexture)
 
+    local compressedTexture
+    local os = love.system.getOS()
+    if os == "Android" or os == "iOS" then
+        compressedTexture = love.graphics.newTexture("test.astc")
+    else
+        compressedTexture = love.graphics.newTexture("test.dds")
+    end
+
     return function()
         love.graphics.print("drawing basic textures work:")
         love.graphics.draw(texture1, 30, 30)
@@ -188,6 +196,9 @@ local texturesScene = (function()
         love.graphics.print("drawing array images works:", 0, 150)
         love.graphics.drawLayer(arrayTexture, 1, 30, 180)
         love.graphics.drawLayer(arrayTexture, 2, 30, 230)
+
+        love.graphics.print("drawing compressed texture:", 400, 0)
+        love.graphics.draw(compressedTexture, 400, 30, 0, 0.3)
 
         love.graphics.print("drawing a cube texture works", 200, 0)
         love.graphics.setShader(cubeShader)
