@@ -9,6 +9,7 @@ local printScene = (function()
         love.graphics.draw(text, 10, 25)
         love.graphics.printf("This text is aligned right, and wraps when it gets too big.", 10, 60, 125, "right")
         love.graphics.print("Renderer Info: " .. table.concat({love.graphics.getRendererInfo()}, " - "), 25, 200)
+        love.graphics.print("stats: " .. love.graphics.getStats().texturememory, 25, 220)
     end
 end)()
 
@@ -379,6 +380,24 @@ local depthScene = (function()
     end
 end)()
 
+local meshScene = (function()
+    texture = love.graphics.newImage("test.jpg")
+    w, h = texture:getDimensions()
+    mesh = love.graphics.newMesh({
+        {0, 0, 0, 0, 1, 1, 1, 1},
+        {w, 0, 1, 0, 1, 1, 1, 1},
+        {w, h, 1, 1, 1, 1, 1, 1},
+        {0, h, 0, 1, 1, 1, 1, 1},
+    }, "fan", "static")
+    mesh:setTexture(texture)
+    
+    return function()
+        love.graphics.print("draw textured mesh")
+    
+        love.graphics.draw(mesh, 30, 30, 0, 0.3)
+    end
+end)()
+
 local scenes
 local sceneIndex
 
@@ -405,6 +424,7 @@ function love.load()
         readbackScene,
         computeScene,
         depthScene,
+        meshScene,
     }
     sceneIndex = 1
     screenshotChannel = love.thread.newChannel()
@@ -436,6 +456,9 @@ function love.keypressed(key)
     end
     if key == "return" then
         nextScene()
+    end
+    if key == "g" then
+        love.graphics.getTextureFormats({canvas = false})
     end
 end
 
