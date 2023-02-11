@@ -204,7 +204,7 @@ local texturesScene = (function()
         love.graphics.print("drawing a cube texture works", 200, 0)
         love.graphics.setShader(cubeShader)
         love.graphics.rectangle("fill", 250, 50, 100, 100)
-        
+
         love.graphics.setShader()
         love.graphics.print("drawing a volume image", 200, 160)
         love.graphics.setShader(volumeShader)
@@ -215,24 +215,23 @@ local texturesScene = (function()
 end)()
 
 local canvasScene = (function()
-    local canvas
-    local text
-
-    canvas = love.graphics.newCanvas(50, 50)
-    love.graphics.setCanvas(canvas)
-    love.graphics.rectangle("line", 0, 0, 50, 50)
-    love.graphics.circle("fill", 25, 25, 10)
-    love.graphics.setCanvas()
+    local canvas = love.graphics.newCanvas(50, 50)
 
     return function()
+        love.graphics.setCanvas(canvas)
+        love.graphics.clear(0.3, 0.3, 0.3, 1, false, false)
+        love.graphics.rectangle("line", 0, 0, 50, 50)
+        love.graphics.circle("fill", 25, 25, 10)
+        love.graphics.setCanvas()
+
         love.graphics.print("drawing to a canvas works")
         love.graphics.draw(canvas, 50, 50)
     end
 end)()
 
 local mipScene = (function()
-    textureMip = love.graphics.newTexture("test.jpg", { mipmaps = true })
-    texture = love.graphics.newTexture("test.jpg")
+    local textureMip = love.graphics.newTexture("test.jpg", { mipmaps = true })
+    local texture = love.graphics.newTexture("test.jpg")
 
     return function()
         love.graphics.print("mip maps work")
@@ -270,7 +269,7 @@ local multiCanvasScene = (function()
 
     love.graphics.rectangle("line", 0, 0, 50, 50)
     love.graphics.circle("fill", 25, 25, 10)
-    
+
     love.graphics.setCanvas()
     love.graphics.setShader()
 
@@ -333,7 +332,7 @@ local computeScene = (function()
             imageStore(out_tex, ivec2(love_GlobalThreadID.xy), vec4(time, 1.0, 1.0, 1.0));
         }
     ]]
-    
+
     local tex = love.graphics.newTexture(64, 64, {
         computewrite = true,
         format = "r32f"
@@ -381,19 +380,18 @@ local depthScene = (function()
 end)()
 
 local meshScene = (function()
-    texture = love.graphics.newImage("test.jpg")
-    w, h = texture:getDimensions()
-    mesh = love.graphics.newMesh({
+    local texture = love.graphics.newImage("test.jpg")
+    local w, h = texture:getDimensions()
+    local mesh = love.graphics.newMesh({
         {0, 0, 0, 0, 1, 1, 1, 1},
         {w, 0, 1, 0, 1, 1, 1, 1},
         {w, h, 1, 1, 1, 1, 1, 1},
         {0, h, 0, 1, 1, 1, 1, 1},
     }, "fan", "static")
     mesh:setTexture(texture)
-    
+
     return function()
         love.graphics.print("draw textured mesh")
-    
         love.graphics.draw(mesh, 30, 30, 0, 0.3)
     end
 end)()
